@@ -1,4 +1,4 @@
-name = "basadi"
+name = "bsd"
 main = "src/worker.js"
 compatibility_date = "2025-01-01"
 
@@ -18,8 +18,8 @@ MIN_TUKAR = "10000"      # minimal penukaran saldo (Rp)
 # Database D1: isi database_id dari `wrangler d1 create basadi-db`
 [[d1_databases]]
 binding = "DB"
-database_name = "basadi-db"
-database_id = "ISI_DENGAN_DATABASE_ID_D1"
+database_name = "bsd"
+database_id = "2f689769-93c8-454f-9024-72b8591c5ac2"
 
 # RAHASIA (jangan ditulis di sini) -> `wrangler secret put SESSION_SECRET`
 #                                      `wrangler secret put CAPTCHA_SECRET`
