@@ -1,0 +1,49 @@
+// Membuat SQL demo 3 peran + contoh transaksi (idempotent: aman dijalankan berulang).
+//   node scripts/make-demo.mjs > demo.sql          -> buat/reset data demo
+//   node scripts/make-demo.mjs clean > clean.sql   -> hapus semua data demo
+// PIN demo di-hash saat skrip dijalankan; demo.sql tidak ikut git (lihat .gitignore).
+import { hashPin } from '../src/lib/crypto.js';
+
+const PIN = '123456';
+const USERS = [
+  { hp: '08990000001', nama: 'Admin Demo', role: 'super_admin', tps: 'NULL' },
+  { hp: '08990000002', nama: 'Petugas Demo', role: 'admin_tps', tps: '1' },
+  { hp: '08990000003', nama: 'Pengguna Demo', role: 'nasabah', tps: 'NULL' },
+];
+const list = USERS.map((u) => `'${u.hp}'`).join(',');
+const uid = (hp) => `(SELECT id FROM users WHERE no_hp='${hp}')`;
+const jenis = (kode) => `(SELECT id FROM jenis_sampah WHERE kode='${kode}')`;
+const ids = `(SELECT id FROM users WHERE no_hp IN (${list}))`;
+
+const reset = `DELETE FROM notifikasi WHERE user_id IN ${ids};
+DELETE FROM penukaran WHERE user_id IN ${ids};
+DELETE FROM setoran WHERE user_id IN ${ids};
+DELETE FROM users WHERE no_hp IN (${list});`;
+
+if (process.argv[2] === 'clean') { console.log(reset); process.exit(0); }
+
+const [admin, petugas, pengguna] = USERS.map((u) => u.hp);
+const setoran = (kode, j, berat, harga, status, ver, cat, ago) =>
+  `INSERT INTO setoran(kode,user_id,jenis_id,tps_id,berat_kg,harga_per_kg,nilai,status,catatan,verified_by,created_at)
+   VALUES('${kode}',${uid(pengguna)},${jenis(j)},1,${berat},${harga},${Math.round(berat * harga)},'${status}','${cat}',${ver ? uid(petugas) : 'NULL'},datetime('now','-${ago} days'));`;
+const tukar = (kode, nominal, metode, tujuan, status, ago) =>
+  `INSERT INTO penukaran(kode,user_id,nominal,metode,tujuan,status,processed_by,created_at)
+   VALUES('${kode}',${uid(pengguna)},${nominal},'${metode}','${tujuan}','${status}',${status === 'menunggu' ? 'NULL' : uid(admin)},datetime('now','-${ago} days'));`;
+const notif = (judul, isi, ago) =>
+  `INSERT INTO notifikasi(user_id,judul,isi,created_at) VALUES(${uid(pengguna)},'${judul}','${isi}',datetime('now','-${ago} days'));`;
+
+const pinHash = await hashPin(PIN);
+console.log([
+  reset,
+  ...USERS.map((u) => `INSERT INTO users(no_hp,nama,pin_hash,role,tps_id) VALUES('${u.hp}','${u.nama}','${pinHash}','${u.role}',${u.tps});`),
+  // Saldo akhir Pengguna Demo: (20.000 + 3.000) - (10.000 selesai + 10.000 menunggu) = Rp 3.000
+  setoran('DEMO-S1', 'PLS-BTL', 5, 4000, 'disetujui', true, '', 6),
+  setoran('DEMO-S2', 'KRT-KRN', 3, 1000, 'disetujui', true, '', 4),
+  setoran('DEMO-S3', 'KRT-KDS', 2, 1500, 'menunggu', false, '', 0),
+  setoran('DEMO-S4', 'PLS-GLS', 1, 2000, 'ditolak', true, 'Sampah belum dipilah', 2),
+  tukar('DEMO-T1', 10000, 'DANA', '08990000003', 'selesai', 3),
+  tukar('DEMO-T2', 10000, 'GoPay', '08990000003', 'menunggu', 0),
+  notif('Setoran disetujui', 'DEMO-S1: 5 kg diterima, saldo bertambah Rp 20.000.', 6),
+  notif('Setoran ditolak', 'DEMO-S4 ditolak. Sampah belum dipilah', 2),
+  notif('Penukaran berhasil', 'DEMO-T1: Rp 10.000 sudah dikirim.', 3),
+].join('\n'));

@@ -51,3 +51,17 @@ Lokal: salin `.dev.vars.example` → `.dev.vars`, lalu `npm run db:local && npm 
 - Pembayaran DANA/OVO/GoPay dicatat dan diproses manual oleh admin; integrasi payout API bisa ditambah di `services/penukaran.js`.
 - Untuk captcha yang lebih kuat, ganti `lib/captcha.js` dengan Cloudflare Turnstile (antarmuka `issue/check` tetap sama).
 - Aktifkan Cloudflare Rate Limiting pada `/api/auth/*`.
+
+## Demo 3 peran
+```bash
+npm run demo          # buat akun demo + contoh transaksi (aman diulang = reset)
+npm run demo:clean    # hapus semua data demo
+```
+| Peran | No HP | PIN |
+|---|---|---|
+| Admin | 08990000001 | 123456 |
+| Petugas (TPS Bank Sampah Cinta) | 08990000002 | 123456 |
+| Pengguna | 08990000003 | 123456 |
+
+**Jangan biarkan akun demo aktif di produksi** – jalankan `npm run demo:clean` sebelum dipakai sungguhan.
+Jika database Anda bernama `bsd` (bukan `basadi-db`), ganti nama itu di skrip `demo` / `demo:clean` pada `package.json`.
