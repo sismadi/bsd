@@ -6,7 +6,7 @@ Peran: **Nasabah**, **Admin TPS**, **Super Admin** (sesuai proposal BSD).
 ## Arsitektur
 
 ```
-GitHub ──(Workers Builds)──▶ Cloudflare Worker "basadi"
+GitHub ──(Workers Builds)──▶ Cloudflare Worker "bsd"
                               ├─ public/            Frontend: HTML + CSS + JS (aset statis Cloudflare)
                               ├─ src/worker.js      Gateway backend: sesi, role, CSRF, routing
                               │   └─ src/services/  auth · setoran · penukaran · dompet · master
@@ -29,12 +29,12 @@ Rahasia & env: Cloudflare (secret SESSION_SECRET, CAPTCHA_SECRET; vars di wrangl
 ```bash
 npm install
 npx wrangler login
-npx wrangler d1 create basadi-db            # salin database_id ke wrangler.toml
+npx wrangler d1 create bsd            # salin database_id ke wrangler.toml
 npm run db:schema && npm run db:seed        # buat tabel + data contoh
 npx wrangler secret put SESSION_SECRET      # isi string acak panjang (mis. openssl rand -hex 32)
 npx wrangler secret put CAPTCHA_SECRET      # string acak lain
 node scripts/make-admin.mjs 0812xxxxxxxx "Nama Anda" 123456 > admin.sql
-npx wrangler d1 execute basadi-db --remote --file=admin.sql   # super admin pertama
+npx wrangler d1 execute bsd --remote --file=admin.sql   # super admin pertama
 npm run deploy
 ```
 Lokal: salin `.dev.vars.example` → `.dev.vars`, lalu `npm run db:local && npm run dev`.
@@ -64,4 +64,3 @@ npm run demo:clean    # hapus semua data demo
 | Pengguna | 08990000003 | 123456 |
 
 **Jangan biarkan akun demo aktif di produksi** – jalankan `npm run demo:clean` sebelum dipakai sungguhan.
-Jika database Anda bernama `bsd` (bukan `basadi-db`), ganti nama itu di skrip `demo` / `demo:clean` pada `package.json`.

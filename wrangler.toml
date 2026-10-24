@@ -15,7 +15,7 @@ ENVIRONMENT = "production"
 SESSION_TTL = "604800"   # umur sesi (detik) = 7 hari
 MIN_TUKAR = "10000"      # minimal penukaran saldo (Rp)
 
-# Database D1: isi database_id dari `wrangler d1 create basadi-db`
+# Database D1: isi database_id dari `wrangler d1 create bsd`
 [[d1_databases]]
 binding = "DB"
 database_name = "bsd"
