@@ -1,6 +1,6 @@
 // Entry frontend: sesi, shell, router hash. Menu & halaman sepenuhnya digerakkan oleh tabel ROUTES.
 import { api } from './api.js';
-import { $, esc, icon, logo, toast } from './ui.js';
+import { ROLE_LABEL, $, esc, icon, logo, toast } from './ui.js';
 import { authView } from './views/auth.js';
 import * as N from './views/nasabah.js';
 import * as A from './views/admin.js';
@@ -32,7 +32,7 @@ function shell() {
   const allowed = ROUTES.filter((r) => r.roles.includes(ctx.user.role));
   root.innerHTML = `<div class="shell">
     <header class="topbar"><div class="brand">${logo}<span>Basadi</span></div>
-      <div class="tools"><span class="who">${esc(ctx.user.nama)}</span>
+      <div class="tools"><span class="who">${esc(ctx.user.nama)} · ${ROLE_LABEL[ctx.user.role]}</span>
         ${ctx.user.role === 'nasabah' ? `<a class="iconbtn" href="#/notif" aria-label="Notifikasi">${icon('bell')}</a><a class="iconbtn" href="#/edukasi" aria-label="Edukasi">${icon('book')}</a>` : ''}
         <button class="iconbtn" id="logout" aria-label="Keluar">${icon('out')}</button></div></header>
     <nav class="nav">${allowed.filter((r) => !r.hidden).map((r) => `<a href="#/${r.path}" data-p="${r.path}">${icon(r.icon)}<span>${r.label}</span></a>`).join('')}</nav>

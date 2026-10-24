@@ -1,6 +1,6 @@
 // Tampilan Admin TPS & Super Admin: dashboard, verifikasi, master data (CRUD generik), pengguna.
 import { api } from '../api.js';
-import { $, esc, rupiah, tgl, badge, empty, formHtml, submitForm, on, toast, modal, closeModal } from '../ui.js';
+import { ROLE_LABEL, $, esc, rupiah, tgl, badge, empty, formHtml, submitForm, on, toast, modal, closeModal } from '../ui.js';
 
 export async function dashboard(el) {
   const s = await api.get('/admin/stats');
@@ -105,12 +105,12 @@ export async function master(el, ctx, key) {
 export async function pengguna(el) {
   const [users, tps] = await Promise.all([api.get('/admin/users'), api.get('/tps')]);
   el.innerHTML = `<h2>Pengguna</h2><div class="tablewrap"><table><thead><tr><th>Nama</th><th>No HP</th><th>Role</th><th>TPS</th><th>Status</th></tr></thead><tbody>${users.map((u) =>
-    `<tr class="click" data-id="${u.id}"><td>${esc(u.nama)}</td><td>${esc(u.no_hp)}</td><td>${esc(u.role)}</td><td>${esc(tps.find((t) => t.id === u.tps_id)?.nama || '-')}</td><td>${u.aktif ? 'Aktif' : 'Nonaktif'}</td></tr>`).join('')}</tbody></table></div>`;
+    `<tr class="click" data-id="${u.id}"><td>${esc(u.nama)}</td><td>${esc(u.no_hp)}</td><td>${esc(ROLE_LABEL[u.role])}</td><td>${esc(tps.find((t) => t.id === u.tps_id)?.nama || '-')}</td><td>${u.aktif ? 'Aktif' : 'Nonaktif'}</td></tr>`).join('')}</tbody></table></div>`;
   on(el, 'click', 'tr[data-id]', (e, tr) => {
     const u = users.find((x) => String(x.id) === tr.dataset.id);
     const d = modal(`<h3>${esc(u.nama)}</h3><form>${formHtml([
-      { name: 'role', label: 'Role', type: 'select', options: ['nasabah', 'admin_tps', 'super_admin'].map((v) => ({ value: v, label: v })) },
-      { name: 'tps_id', label: 'TPS (untuk admin_tps)', type: 'select', optional: true, options: [{ value: '', label: '-' }, ...tps.map((t) => ({ value: t.id, label: t.nama }))] },
+      { name: 'role', label: 'Role', type: 'select', options: Object.entries(ROLE_LABEL).map(([v, label]) => ({ value: v, label })) },
+      { name: 'tps_id', label: 'TPS (wajib untuk Petugas)', type: 'select', optional: true, options: [{ value: '', label: '-' }, ...tps.map((t) => ({ value: t.id, label: t.nama }))] },
       { name: 'aktif', label: 'Status', type: 'select', options: [{ value: 1, label: 'Aktif' }, { value: 0, label: 'Nonaktif' }] }], u)}</form>
       <div class="actions"><button class="btn ghost" id="tutup">Batal</button></div>`);
     $('#tutup', d).onclick = closeModal;

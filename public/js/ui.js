@@ -4,6 +4,7 @@ export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&a
 export const rupiah = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
 export const tgl = (s) => new Date(String(s).replace(' ', 'T') + 'Z').toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
 export const badge = (st) => `<span class="badge ${esc(st)}">${esc(st)}</span>`;
+export const ROLE_LABEL = { nasabah: 'Pengguna', admin_tps: 'Petugas', super_admin: 'Admin' };
 export const empty = (t) => `<p class="empty">${esc(t)}</p>`;
 
 const ICONS = {

@@ -1,7 +1,7 @@
 // Service Master: CRUD generik (jenis sampah, TPS, edukasi) + notifikasi + pengguna + statistik.
 // Satu factory crud() menghasilkan 4 endpoint per resource -> tambah resource = tambah 1 objek konfigurasi.
 import { json, body, fail, validate } from '../lib/http.js';
-import { all, run, insertRow, updateRow } from '../lib/db.js';
+import { all, first, run, insertRow, updateRow } from '../lib/db.js';
 
 const SUPER = ['super_admin'];
 const RESOURCES = [
@@ -50,7 +50,10 @@ export const register = (r) => {
     json(await all(env, 'SELECT id,no_hp,nama,role,tps_id,aktif,created_at FROM users ORDER BY id DESC LIMIT 300')));
   r.add('PATCH', '/api/admin/users/:id', SUPER, async ({ req, env, user, params }) => {
     if (Number(params.id) === user.id) fail(409, 'Tidak bisa mengubah akun sendiri');
-    await updateRow(env, 'users', params.id, validate(await body(req), USER_PATCH));
+    const d = validate(await body(req), USER_PATCH);
+    if (d.role === 'admin_tps' && !d.tps_id && !(await first(env, 'SELECT tps_id FROM users WHERE id=?', params.id))?.tps_id)
+      fail(422, 'Petugas wajib dikaitkan dengan satu TPS');
+    await updateRow(env, 'users', params.id, d);
     return json({ ok: true });
   });
 
