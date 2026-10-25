@@ -1,8 +1,8 @@
 // Service Penukaran saldo (DANA/OVO/GoPay/Voucher/Tunai).
 import { json, body, fail, validate } from '../lib/http.js';
 import { all, first, run, q, batch, notifStmt, newCode, SALDO_SQL } from '../lib/db.js';
+import { ADM, NAS, STAFF } from '../lib/roles.js';
 
-const ADMIN = ['admin_tps', 'super_admin'];
 const CREATE = (min) => ({
   nominal: { type: 'number', required: true, min, label: 'Nominal' },
   metode: { required: true, oneOf: ['DANA', 'OVO', 'GoPay', 'Voucher', 'Tunai'], label: 'Metode' },
@@ -11,7 +11,7 @@ const CREATE = (min) => ({
 const REVIEW = { status: { required: true, oneOf: ['selesai', 'ditolak'], label: 'Status' } };
 
 export const register = (r) => {
-  r.add('GET', '/api/penukaran', [], async ({ env, user, url }) => {
+  r.add('GET', '/api/penukaran', STAFF, async ({ env, user, url }) => {
     const status = url.searchParams.get('status'), own = user.role === 'nasabah';
     return json(await all(env,
       `SELECT p.id,p.kode,p.nominal,p.metode,p.tujuan,p.status,p.created_at,u.nama AS nasabah,u.no_hp
@@ -19,7 +19,7 @@ export const register = (r) => {
        ORDER BY p.id DESC LIMIT 200`, ...(own ? [user.id] : []), ...(status ? [status] : [])));
   });
 
-  r.add('POST', '/api/penukaran', ['nasabah'], async ({ req, env, user }) => {
+  r.add('POST', '/api/penukaran', NAS, async ({ req, env, user }) => {
     const d = validate(await body(req), CREATE(Number(env.MIN_TUKAR) || 10000));
     if (d.metode !== 'Tunai' && !d.tujuan) fail(422, 'Nomor tujuan wajib diisi');
     const kode = newCode('TKR');
@@ -31,7 +31,7 @@ export const register = (r) => {
     return json({ kode }, 201);
   });
 
-  r.add('PATCH', '/api/penukaran/:id', ADMIN, async ({ req, env, user, params }) => {
+  r.add('PATCH', '/api/penukaran/:id', ADM, async ({ req, env, user, params }) => {
     const d = validate(await body(req), REVIEW);
     const row = await first(env, 'SELECT id,user_id,kode,nominal,status FROM penukaran WHERE id=?', params.id);
     if (!row) fail(404, 'Penukaran tidak ditemukan');

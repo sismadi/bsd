@@ -1,6 +1,6 @@
 // Tampilan Nasabah: beranda, setor, tukar, riwayat, lokasi TPS, edukasi, notifikasi.
 import { api } from '../api.js';
-import { $, esc, rupiah, tgl, badge, empty, icon, formHtml, submitForm, on, toast, compressImage } from '../ui.js';
+import { $, esc, rupiah, tgl, badge, empty, icon, formHtml, submitForm, on, toast, compressImage, pickerHtml, bindPicker } from '../ui.js';
 
 const riwayatList = (rows) => rows.length ? rows.map((r) => `
   <div class="item">
@@ -20,18 +20,18 @@ export async function beranda(el, { user }) {
 
 export async function setor(el) {
   const [jenis, tps] = await Promise.all([api.get('/jenis'), api.get('/tps')]);
-  const aktif = jenis.filter((j) => j.aktif);
+  const aktif = jenis.filter((j) => j.aktif).map((j) => ({ ...j, meta: rupiah(j.harga_per_kg) + '/kg' }));
   const fields = [
-    { name: 'jenis_id', label: 'Jenis sampah', type: 'select', options: aktif.map((j) => ({ value: j.id, label: `${j.nama} (${rupiah(j.harga_per_kg)}/kg)` })) },
     { name: 'tps_id', label: 'Lokasi setor', type: 'select', options: tps.map((t) => ({ value: t.id, label: t.nama })) },
     { name: 'berat_kg', label: 'Berat (kg)', type: 'number', step: '0.1', min: '0.1', max: '1000' },
     { name: 'foto', label: 'Unggah foto', type: 'file', accept: 'image/*', optional: true },
   ];
-  el.innerHTML = `<h2>Setor Sampah</h2><div class="card"><form>${formHtml(fields, {}, 'Kirim')}
+  el.innerHTML = `<h2>Setor Sampah</h2><div class="card"><form>${pickerHtml({ name: 'jenis_id', label: 'Jenis sampah' })}${formHtml(fields, {}, 'Kirim')}
     <div class="estimate" id="est">Estimasi: Rp 0</div><img id="prev" class="preview hidden" alt="Pratinjau foto"></form></div>
     <p class="muted">Nilai final ditetapkan admin TPS setelah sampah ditimbang.</p>`;
   const form = $('form', el), hargaOf = (id) => aktif.find((j) => String(j.id) === id)?.harga_per_kg || 0;
-  const est = () => { $('#est', el).textContent = 'Estimasi: ' + rupiah(Math.round((Number(form.berat_kg.value) || 0) * hargaOf(form.jenis_id.value))); };
+  const pk = bindPicker(form, aktif, { name: 'jenis_id' });
+  const est = () => { $('#est', el).textContent = 'Estimasi: ' + rupiah(Math.round((Number(form.berat_kg.value) || 0) * hargaOf(pk.value()))); };
   form.addEventListener('input', est);
   form.foto.addEventListener('change', async () => {
     const f = form.foto.files[0], img = $('#prev', el);
@@ -39,6 +39,7 @@ export async function setor(el) {
     try { img.src = await compressImage(f); img.classList.remove('hidden'); } catch (e) { toast(e.message, 'err'); form.foto.value = ''; }
   });
   submitForm(form, async (d) => {
+    if (!d.jenis_id) throw new Error('Pilih jenis sampah terlebih dahulu');
     const foto = $('#prev', el).classList.contains('hidden') ? '' : $('#prev', el).src;
     await api.post('/setoran', { jenis_id: d.jenis_id, tps_id: d.tps_id, berat_kg: d.berat_kg, foto });
     toast('Setoran terkirim, menunggu verifikasi TPS.');

@@ -105,3 +105,25 @@ dialog::backdrop{background:rgba(10,30,22,.5)}
 .toast{background:var(--g900);color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.25);max-width:90vw}
 .toast.err{background:var(--bad)}
 .end{text-align:right}
+
+/* ---------- picker (pencarian cepat + ikon kategori) ---------- */
+.picker{display:flex;flex-direction:column;gap:8px}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:#fff}
+.search:focus-within{outline:2px solid var(--g500);outline-offset:1px}
+.search .ic{width:18px;height:18px;stroke:var(--soft);flex:none}
+.search input{border:0;outline:0;padding:10px 0;width:100%;background:none;font:inherit}
+.picker .chips{margin:0;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
+.picker .chip{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.picker .chip .ic{width:16px;height:16px}
+.plist{display:grid;gap:6px;max-height:280px;overflow-y:auto}
+.popt{display:flex;align-items:center;gap:10px;text-align:left;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font:inherit}
+.popt .ic{width:26px;height:26px;stroke:var(--g700);flex:none}
+.popt span{flex:1;display:flex;flex-direction:column;min-width:0}
+.popt small{color:var(--soft)}
+.popt em{font-style:normal;font-weight:700;color:var(--g900);white-space:nowrap}
+.popt:hover{background:var(--g50)}
+.popt.sel{border-color:var(--g700);background:var(--g100);box-shadow:inset 0 0 0 1px var(--g700)}
+.badge.diterima{background:var(--g100);color:var(--g900)}
+.badge.dibatalkan{background:#eceeed;color:var(--soft)}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap}
+.field .search input:focus{outline:0}

@@ -4,8 +4,11 @@ import { ROLE_LABEL, $, esc, icon, logo, toast } from './ui.js';
 import { authView } from './views/auth.js';
 import * as N from './views/nasabah.js';
 import * as A from './views/admin.js';
+import * as K from './views/kelola.js';
+import * as P from './views/pengepul.js';
+import * as B from './views/backup.js';
 
-const NAS = ['nasabah'], ADM = ['admin_tps', 'super_admin'], SUP = ['super_admin'];
+const NAS = ['nasabah'], PGP = ['pengepul'], ADM = ['admin_tps', 'super_admin'], SUP = ['super_admin'];
 const ROUTES = [
   { path: 'beranda', label: 'Beranda', icon: 'home', roles: NAS, view: N.beranda },
   { path: 'setor', label: 'Setor', icon: 'upload', roles: NAS, view: N.setor },
@@ -13,17 +16,23 @@ const ROUTES = [
   { path: 'riwayat', label: 'Riwayat', icon: 'clock', roles: NAS, view: N.riwayat },
   { path: 'tps', label: 'Lokasi', icon: 'pin', roles: NAS, view: N.tps },
   { path: 'edukasi', label: 'Edukasi', icon: 'book', roles: NAS, view: N.edukasi, hidden: true },
-  { path: 'notif', label: 'Notifikasi', icon: 'bell', roles: NAS, view: N.notif, hidden: true },
+  { path: 'notif', label: 'Notifikasi', icon: 'bell', roles: [...NAS, ...PGP, ...ADM], view: N.notif, hidden: true },
+
+  { path: 'pembelian', label: 'Pembelian', icon: 'truck', roles: PGP, view: P.pembelian, wide: true },
+  { path: 'tps', label: 'Lokasi', icon: 'pin', roles: PGP, view: N.tps },
 
   { path: 'dashboard', label: 'Dashboard', icon: 'grid', roles: ADM, view: A.dashboard, wide: true },
   { path: 'verifikasi', label: 'Setoran', icon: 'check', roles: ADM, view: A.verifikasiSetoran, wide: true },
   { path: 'penukaran', label: 'Penukaran', icon: 'swap', roles: ADM, view: A.verifikasiTukar, wide: true },
+  { path: 'penjualan', label: 'Penjualan', icon: 'truck', roles: ADM, view: K.penjualan, wide: true },
+  { path: 'delegasi', label: 'Delegasi', icon: 'userplus', roles: ADM, view: K.delegasi, wide: true },
   { path: 'm-jenis', label: 'Harga', icon: 'tag', roles: SUP, view: (e, c) => A.master(e, c, 'jenis'), wide: true },
   { path: 'm-tps', label: 'TPS', icon: 'pin', roles: SUP, view: (e, c) => A.master(e, c, 'tps'), wide: true },
   { path: 'm-edukasi', label: 'Edukasi', icon: 'book', roles: SUP, view: (e, c) => A.master(e, c, 'edukasi'), wide: true },
+  { path: 'backup', label: 'Backup', icon: 'db', roles: SUP, view: B.backup },
   { path: 'pengguna', label: 'Pengguna', icon: 'users', roles: SUP, view: A.pengguna, wide: true },
 ];
-const HOME = { nasabah: 'beranda', admin_tps: 'dashboard', super_admin: 'dashboard' };
+const HOME = { nasabah: 'beranda', pengepul: 'pembelian', admin_tps: 'dashboard', super_admin: 'dashboard' };
 
 const root = $('#app');
 let ctx = null;
@@ -33,7 +42,7 @@ function shell() {
   root.innerHTML = `<div class="shell">
     <header class="topbar"><div class="brand">${logo}<span>Basadi</span></div>
       <div class="tools"><span class="who">${esc(ctx.user.nama)} · ${ROLE_LABEL[ctx.user.role]}</span>
-        ${ctx.user.role === 'nasabah' ? `<a class="iconbtn" href="#/notif" aria-label="Notifikasi">${icon('bell')}</a><a class="iconbtn" href="#/edukasi" aria-label="Edukasi">${icon('book')}</a>` : ''}
+        <a class="iconbtn" href="#/notif" aria-label="Notifikasi">${icon('bell')}</a>${ctx.user.role === 'nasabah' ? `<a class="iconbtn" href="#/edukasi" aria-label="Edukasi">${icon('book')}</a>` : ''}
         <button class="iconbtn" id="logout" aria-label="Keluar">${icon('out')}</button></div></header>
     <nav class="nav">${allowed.filter((r) => !r.hidden).map((r) => `<a href="#/${r.path}" data-p="${r.path}">${icon(r.icon)}<span>${r.label}</span></a>`).join('')}</nav>
     <main class="content" id="view"></main></div>`;

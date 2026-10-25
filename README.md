@@ -1,7 +1,7 @@
 # Basadi – Bank Sampah Digital
 
 Aplikasi web (PWA-ready, mobile-first) untuk setor sampah, saldo, penukaran, lokasi TPS, edukasi dan notifikasi.
-Peran: **Nasabah**, **Admin TPS**, **Super Admin** (sesuai proposal BSD).
+Peran: **Pengguna (nasabah)**, **Petugas (admin TPS)**, **Pengepul**, **Admin (super admin)**.
 
 ## Arsitektur
 
@@ -9,7 +9,7 @@ Peran: **Nasabah**, **Admin TPS**, **Super Admin** (sesuai proposal BSD).
 GitHub ──(Workers Builds)──▶ Cloudflare Worker "bsd"
                               ├─ public/            Frontend: HTML + CSS + JS (aset statis Cloudflare)
                               ├─ src/worker.js      Gateway backend: sesi, role, CSRF, routing
-                              │   └─ src/services/  auth · setoran · penukaran · dompet · master
+                              │   └─ src/services/  auth · setoran · penukaran · dompet · master · penjualan · delegasi · backup
                               └─ D1 (SQLite)        binding DB  ← schema.sql
 Rahasia & env: Cloudflare (secret SESSION_SECRET, CAPTCHA_SECRET; vars di wrangler.toml)
 ```
@@ -17,6 +17,17 @@ Rahasia & env: Cloudflare (secret SESSION_SECRET, CAPTCHA_SECRET; vars di wrangl
 - **Frontend** dan **backend** terpisah tegas: frontend hanya bicara lewat `/api/*` (`public/js/api.js`).
 - Tiap **service** hanya mendaftarkan route ke router → bisa dipecah menjadi Worker sendiri (service binding) tanpa mengubah logika.
 - **DRY**: satu `validate()`, satu `crud()` factory (jenis sampah/TPS/edukasi), satu `formHtml()`, satu `api`, menu digerakkan tabel `ROUTES`.
+
+## Fitur Pengepul, Delegasi, Pencarian Setor
+- **Pengepul** (role `pengepul`): petugas TPS menjual stok ke pengepul (menu *Penjualan*), pengepul menerima/menolak di menu *Pembelian*. Stok = setoran disetujui − penjualan aktif, dihitung (bukan disimpan); penjualan dibuat atomik sehingga tidak bisa melebihi stok.
+- **Delegasi** (menu *Delegasi*): cari pengguna → jadikan Petugas TPS / Pengepul, atau cabut kembali. Admin bisa semua; Petugas hanya mengangkat/mencabut petugas di TPS-nya sendiri. Semua perubahan tercatat di tabel `delegasi` + notifikasi ke yang bersangkutan.
+- **Setor sampah**: pencarian cepat (nama/kode/kategori, Enter memilih hasil pertama), filter kategori, dan ikon per kategori (`KATEGORI_ICON` di `public/js/ui.js`; kategori baru otomatis memakai ikon kotak).
+
+## Backup & Restore (menu *Backup*, hanya Admin)
+- **Backup**: unduh seluruh data (pengguna, transaksi, master data, foto) sebagai satu berkas JSON. Wajib konfirmasi PIN. Berkas memuat hash PIN → simpan aman.
+- **Restore**: mengganti **seluruh** data dengan isi berkas, dalam satu batch D1 (atomik: gagal = data tidak berubah). Berkas divalidasi dulu (format, tabel/kolom dikenal, minimal satu admin aktif); wajib PIN + mengetik `PULIHKAN`.
+- Tabel baru: daftarkan namanya di `TABLES` pada `src/services/backup.js` (urutan induk → anak); kolomnya dibaca otomatis dari skema.
+- Untuk data sangat besar atau backup terjadwal, gunakan `npx wrangler d1 export bsd --remote --output=backup.sql` (dan `d1 execute --file` untuk memulihkan) atau Cloudflare D1 Time Travel.
 
 ## Keamanan
 - Captcha penjumlahan stateless: jawaban tidak pernah dikirim ke browser (HMAC dengan `CAPTCHA_SECRET`), kedaluwarsa 5 menit, sekali pakai (tabel `captcha_used`).
@@ -38,6 +49,13 @@ npx wrangler d1 execute bsd --remote --file=admin.sql   # super admin pertama
 npm run deploy
 ```
 Lokal: salin `.dev.vars.example` → `.dev.vars`, lalu `npm run db:local && npm run dev`.
+
+## Upgrade database lama (sebelum fitur pengepul)
+```bash
+npx wrangler d1 execute bsd --remote --file=migrations/001_pengepul.sql   # izinkan role pengepul (tabel users dibangun ulang, data tetap)
+npm run db:schema && npm run db:seed                                        # tabel penjualan, delegasi, kategori baru
+```
+Database baru cukup `db:schema` + `db:seed`.
 
 ## Hubungkan GitHub → Cloudflare
 1. `git init && git add . && git commit -m "Basadi" && git remote add origin <repo> && git push -u origin main`
@@ -62,5 +80,6 @@ npm run demo:clean    # hapus semua data demo
 | Admin | 08990000001 | 123456 |
 | Petugas (TPS Bank Sampah Cinta) | 08990000002 | 123456 |
 | Pengguna | 08990000003 | 123456 |
+| Pengepul | 08990000004 | 123456 |
 
 **Jangan biarkan akun demo aktif di produksi** – jalankan `npm run demo:clean` sebelum dipakai sungguhan.

@@ -9,9 +9,12 @@ import * as setoran from './services/setoran.js';
 import * as penukaran from './services/penukaran.js';
 import * as dompet from './services/dompet.js';
 import * as master from './services/master.js';
+import * as penjualan from './services/penjualan.js';
+import * as delegasi from './services/delegasi.js';
+import * as backup from './services/backup.js';
 
 const router = new Router();
-[auth, setoran, penukaran, dompet, master].forEach((s) => s.register(router));
+[auth, setoran, penukaran, dompet, master, penjualan, delegasi, backup].forEach((s) => s.register(router));
 
 const errorResponse = (e) => {
   if (e instanceof HttpError) return json({ error: e.message }, e.status);

@@ -13,7 +13,7 @@ export async function dashboard(el) {
 }
 
 /* Daftar dengan filter status (dipakai verifikasi setoran & penukaran). */
-function reviewList(el, { title, endpoint, statuses, row, onRowClick }) {
+export function reviewList(el, { title, endpoint, statuses, row, onRowClick }) {
   let status = statuses[0];
   const draw = async () => {
     const rows = await api.get(`${endpoint}?status=${status}`);

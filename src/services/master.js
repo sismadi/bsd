@@ -2,8 +2,9 @@
 // Satu factory crud() menghasilkan 4 endpoint per resource -> tambah resource = tambah 1 objek konfigurasi.
 import { json, body, fail, validate } from '../lib/http.js';
 import { all, first, run, insertRow, updateRow } from '../lib/db.js';
+import { ADM, SUP, ROLES } from '../lib/roles.js';
 
-const SUPER = ['super_admin'];
+const SUPER = SUP;
 const RESOURCES = [
   { path: '/api/jenis', table: 'jenis_sampah', order: 'kategori,nama', rules: {
       kode: { required: true, max: 20 }, nama: { required: true, max: 80 }, kategori: { required: true, max: 40 },
@@ -31,7 +32,7 @@ function crud(r, { path, table, order, rules }) {
 }
 
 const USER_PATCH = {
-  role: { oneOf: ['nasabah', 'admin_tps', 'super_admin'] },
+  role: { oneOf: ROLES },
   tps_id: { type: 'number', min: 1 },
   aktif: { type: 'number', min: 0, max: 1 },
 };
@@ -58,7 +59,7 @@ export const register = (r) => {
   });
 
   // Statistik dashboard: super_admin = semua TPS, admin_tps = TPS miliknya (?1 NULL -> semua).
-  r.add('GET', '/api/admin/stats', ['admin_tps', 'super_admin'], async ({ env, user }) => {
+  r.add('GET', '/api/admin/stats', ADM, async ({ env, user }) => {
     const scope = user.role === 'admin_tps' ? user.tps_id : null;
     const [row] = await all(env,
       `SELECT

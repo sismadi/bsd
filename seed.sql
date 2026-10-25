@@ -10,7 +10,12 @@ INSERT OR IGNORE INTO jenis_sampah (kode,nama,kategori,harga_per_kg,aktif) VALUE
  ('PLS-GLS','Gelas Plastik','Plastik',2000,1),
  ('PLS-BTL','Botol Plastik','Plastik',4000,1),
  ('PLS-SLP','Selopan','Plastik',3000,1),
- ('LOG-KLG','Kaleng','Logam',5000,1);
+ ('LOG-KLG','Kaleng','Logam',5000,1),
+ ('LOG-ALM','Aluminium','Logam',12000,1),
+ ('KCA-BTL','Botol Kaca','Kaca',500,1),
+ ('ELK-KBL','Kabel Bekas','Elektronik',8000,1),
+ ('MYK-JLT','Minyak Jelantah','Minyak',6000,1),
+ ('TKS-PKN','Pakaian Bekas','Tekstil',1000,1);
 
 INSERT OR IGNORE INTO edukasi (id,judul,kategori,isi) VALUES
  (1,'Cara memilah sampah di rumah','Pemilahan','Pisahkan sampah menjadi organik, anorganik (plastik, kertas, logam), dan residu. Bilas botol dan gelas plastik sebelum disetor agar harganya lebih baik.'),
