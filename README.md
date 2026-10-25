@@ -51,9 +51,12 @@ npm run deploy
 Lokal: salin `.dev.vars.example` → `.dev.vars`, lalu `npm run db:local && npm run dev`.
 
 ## Upgrade database lama (sebelum fitur pengepul)
+Urutan (boleh lewat wrangler maupun Cloudflare Studio, perintah dijalankan satu per satu):
 ```bash
-npx wrangler d1 execute bsd --remote --file=migrations/001_pengepul.sql   # izinkan role pengepul (tabel users dibangun ulang, data tetap)
-npm run db:schema && npm run db:seed                                        # tabel penjualan, delegasi, kategori baru
+npx wrangler d1 export bsd --remote --output=backup.sql                   # cadangan dulu
+npm run db:schema                                                          # tabel penjualan, delegasi (IF NOT EXISTS, aman diulang)
+npx wrangler d1 execute bsd --remote --file=migrations/001_pengepul.sql   # izinkan role pengepul, data tetap
+npm run db:seed                                                            # kategori baru (opsional)
 ```
 Database baru cukup `db:schema` + `db:seed`.
 

@@ -127,3 +127,38 @@ dialog::backdrop{background:rgba(10,30,22,.5)}
 .badge.dibatalkan{background:#eceeed;color:var(--soft)}
 .row-actions{display:flex;gap:6px;flex-wrap:wrap}
 .field .search input:focus{outline:0}
+
+/* ---------- desktop / tablet lebar ---------- */
+/* >=760px: konten dipusatkan di area kanan sidebar; lebar maksimum per halaman lewat --maxw. */
+@media(min-width:760px){
+  .shell>main.content{--maxw:760px;max-width:none;width:auto;margin:0 0 0 200px;padding:28px max(32px,calc((100vw - 200px - var(--maxw))/2)) 56px}
+  .shell>main.content.wide{--maxw:1240px}
+  .shell>main.content:is([data-page=beranda],[data-page=setor],[data-page=tukar],[data-page=tps],[data-page=edukasi]){--maxw:1120px}
+  .picker .chips{flex-wrap:wrap;overflow:visible}
+  h2{font-size:1.6rem}
+}
+@media(min-width:1024px){
+  .plist{max-height:440px}
+  /* Beranda: saldo | aksi cepat | statistik sejajar, aktivitas di bawahnya */
+  [data-page=beranda]{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+  [data-page=beranda]>:is(h2,h3,.card){grid-column:1/-1;margin-block:0}
+  [data-page=beranda]>:is(.saldo,.quick,.stat){margin:0}
+  [data-page=beranda] .stat{display:flex;flex-direction:column;justify-content:center}
+  /* Setor: pemilih jenis di kiri, isian di kanan */
+  [data-page=setor] form{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);column-gap:28px;align-content:start}
+  [data-page=setor] form>.picker{grid-column:1;grid-row:1/span 8}
+  [data-page=setor] form>:not(.picker){grid-column:2}
+  /* Tukar: formulir di kiri, pengajuan di kanan */
+  [data-page=tukar]{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);column-gap:24px;align-items:start}
+  [data-page=tukar]>h2{grid-column:1;grid-row:1}
+  [data-page=tukar]>.saldo{grid-column:1;grid-row:2}
+  [data-page=tukar]>.card:nth-of-type(1){grid-column:1;grid-row:3}
+  [data-page=tukar]>h3{grid-column:2;grid-row:1;align-self:end;margin:0 0 .6rem;font-size:1.6rem}
+  [data-page=tukar]>.card:nth-of-type(2){grid-column:2;grid-row:2/span 2}
+  /* Lokasi & Edukasi: kartu berjajar */
+  [data-page=tps],[data-page=edukasi]{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;align-items:start}
+  [data-page=tps]>:is(h2,button,.actions),[data-page=edukasi]>:is(h2,.empty){grid-column:1/-1}
+  [data-page=tps]>button{justify-self:start}
+  [data-page=tps]>.card,[data-page=edukasi]>.card{margin:0}
+}
+[data-page=tps] .actions:empty{display:none}

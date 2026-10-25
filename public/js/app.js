@@ -57,6 +57,7 @@ async function route() {
   document.querySelectorAll('.nav a').forEach((a) => a.classList.toggle('on', a.dataset.p === r.path));
   const view = $('#view');
   view.classList.toggle('wide', !!r.wide);
+  view.dataset.page = r.path; // hook CSS per halaman (tata letak desktop)
   view.innerHTML = '<p class="empty">Memuat…</p>';
   try { await r.view(view, ctx); }
   catch (e) {
