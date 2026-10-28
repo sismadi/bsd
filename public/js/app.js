@@ -55,7 +55,10 @@ async function route() {
   const r = ROUTES.find((x) => x.path === path && x.roles.includes(ctx.user.role));
   if (!r) { location.hash = '#/' + HOME[ctx.user.role]; return; }
   document.querySelectorAll('.nav a').forEach((a) => a.classList.toggle('on', a.dataset.p === r.path));
-  const view = $('#view');
+  /* Setiap pindah halaman memakai elemen #view BARU: listener delegasi milik halaman sebelumnya
+     (mis. '.chip' di Penukaran) tidak ikut terbawa dan tidak bisa memicu render halaman lain. */
+  const old = $('#view'), view = old.cloneNode(false);
+  old.replaceWith(view);
   view.classList.toggle('wide', !!r.wide);
   view.dataset.page = r.path; // hook CSS per halaman (tata letak desktop)
   view.innerHTML = '<p class="empty">Memuat…</p>';
